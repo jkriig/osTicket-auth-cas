@@ -1,34 +1,31 @@
 <?php
 
-require_once INCLUDE_DIR.'class.plugin.php';
-require_once 'config.php';
+require_once(INCLUDE_DIR.'class.plugin.php');
+require_once('config.php');
 
-class CasAuthPlugin extends Plugin
-{
-  public $config_class = 'CasPluginConfig';
+class CasAuthPlugin extends Plugin {
+    var $config_class = "CasPluginConfig";
 
-  public function bootstrap()
-  {
-    $config = $this->getConfig();
+    function bootstrap() {
+        $config = $this->getConfig();
 
-    $enabled = $config->get('cas-enabled');
-    if (in_array($enabled, array('all', 'staff'))) {
-      require_once 'cas.php';
-      CasStaffAuthBackend::bootstrap($this->getConfig());
-      StaffAuthenticationBackend::register(new CasStaffAuthBackend());
+        $enabled = $config->get('cas-enabled');
+        if (in_array($enabled, array('all', 'staff'))) {
+            require_once('cas.php');
+            StaffAuthenticationBackend::register(
+                new CasStaffAuthBackend($this->getConfig()));
+        }
+        if (in_array($enabled, array('all', 'client'))) {
+            require_once('cas.php');
+            UserAuthenticationBackend::register(
+                new CasClientAuthBackend($this->getConfig()));
+        }
     }
-    if (in_array($enabled, array('all', 'client'))) {
-      require_once 'cas.php';
-      CasClientAuthBackend::bootstrap($this->getConfig());
-      UserAuthenticationBackend::register(new CasClientAuthBackend());
-    }
-  }
 }
 
-require_once INCLUDE_DIR.'UniversalClassLoader.php';
+require_once(INCLUDE_DIR.'UniversalClassLoader.php');
 use Symfony\Component\ClassLoader\UniversalClassLoader_osTicket;
-
 $loader = new UniversalClassLoader_osTicket();
 $loader->registerNamespaceFallbacks(array(
-  dirname(__file__).'/lib', ));
+    dirname(__file__).'/lib'));
 $loader->register();
